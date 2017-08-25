@@ -4,7 +4,7 @@ from math import exp,pi,sin,cos
 import numpy as np
 
 X = np.zeros([150,240,240,5],'float32')
-with open("./demo/X.txt", "r") as f:
+with open("./../X.txt", "r") as f:
     num=-1
     row=-1
     column=-1
@@ -22,7 +22,7 @@ with open("./demo/X.txt", "r") as f:
             ch += 1
         
 Xte = np.zeros([26,240,240,5],'float32')
-with open("./demo/Xte.txt", "r") as f:
+with open("./../Xte.txt", "r") as f:
     num=-1
     row=-1
     column=-1
@@ -51,13 +51,13 @@ def mask_check(mask_path):
                 Y[0,_x*y+x] = 1
     return Y
 
-train_ans_path = glob.glob("C:/Users/shgtkmt/workspace/fourier_learning/train_ans/*.tif")
+train_ans_path = glob.glob("C:/Users/shgtkmt/workspace/cnn_fourier/train_ans/*.tif")
 data_num = (len(train_ans_path) - 1) - 26
 Y = mask_check(train_ans_path[data_num])
 for i in range(data_num):
     Y = np.append(Y,mask_check(train_ans_path[i]),axis=0)
 
-test_ans_path = glob.glob("C:/Users/shgtkmt/workspace/fourier_learning/train_ans/*.tif")
+test_ans_path = glob.glob("C:/Users/shgtkmt/workspace/cnn_fourier/train_ans/*.tif")
 data_num = len(test_ans_path)-1
 Yte = mask_check(test_ans_path[data_num])
 for i in range(data_num - 150):
