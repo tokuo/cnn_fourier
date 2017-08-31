@@ -63,47 +63,36 @@ Yte = mask_check(test_ans_path[data_num])
 for i in range(data_num - 150):
     Yte = np.append(Yte,mask_check(test_ans_path[i + 150]),axis=0)
 
-from keras.models import Sequential
-model = Sequential()
-from keras.layers import Dense, Activation, Flatten, Dropout
+from keras.models import Sequential, Model
+#model = Sequential()
+from keras.layers import Input, Dense, Activation, Flatten, Dropout
 from keras.layers.convolutional import Conv2D, UpSampling2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
 
-model.add(Conv2D(10, (3, 3), padding='same', input_shape=(240, 240, 5)))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(3, 3)))
-model.add(Conv2D(20, (5, 5), padding='same',))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(MaxPooling2D(pool_size=(4, 4)))
+input_img = Input(shape=(240,240,5))
+x = Conv2D(10, (3, 3), padding='same')(input_img)
+x = Conv2D(10, (3, 3), padding='same')(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = MaxPooling2D(pool_size=(2, 2))(x)
 
-'''
-model.add(Conv2D(30, (4, 4), padding='same'))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(UpSampling2D((4, 4)))
-model.add(Conv2D(10, (3, 3), padding='same'))
-model.add(BatchNormalization())
-model.add(Activation('relu'))
-model.add(UpSampling2D((3, 3)))
-'''
+#model.add(UpSampling2D((2, 2)))
+x = Conv2D(1, (3, 3), padding='same')(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = MaxPooling2D(pool_size=(2, 2))(x)
+x = Flatten()(x)
+x = Dense(3600)(x)
+out = Activation('sigmoid')(x)
 
-model.add(Conv2D(1, (3, 3), padding='same'))
-model.add(Flatten())
-#model.add(Dense(5000))
-#model.add(LeakyReLU(0.2))
-#model.add(Dropout(0.3))
-model.add(Dense(60*60))
-model.add(Activation('sigmoid'))
-
+model = Model(input_img, out)
 model.compile(loss="binary_crossentropy", 
               optimizer='adam',
              metrics=['accuracy'])
 
-model.fit(X, Y, nb_epoch=10, batch_size=10)
+model.fit(X, Y, nb_epoch=5, batch_size=10)
 loss_and_metrics = model.evaluate(Xte,Yte)
 
 print("\nloss:{} accuracy:{}".format(loss_and_metrics[0],loss_and_metrics[1]))

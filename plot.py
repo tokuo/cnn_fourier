@@ -36,4 +36,4 @@ model.compile(loss="binary_crossentropy",
 
 #上記にmodelを記入
 from keras.utils import plot_model
-plot_model(model, to_file='model.png', show_shapes=True)
+plot_model(model, to_file='./demo/model.png', show_shapes=True)
