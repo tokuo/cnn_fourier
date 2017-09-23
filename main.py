@@ -3,6 +3,8 @@ from PIL import Image
 from math import exp,pi,sin,cos
 import numpy as np
 
+
+
 X = np.zeros([150,240,240,5],'float32')
 with open("./../X.txt", "r") as f:
     num=-1
@@ -41,14 +43,14 @@ with open("./../Xte.txt", "r") as f:
 
 def mask_check(mask_path):
     mask = Image.open(mask_path)
-    _x = int(mask.size[0]/4)
-    _y = int(mask.size[1]/4)
-    Y = np.zeros([1, _y*_x])
-    mask = np.array(mask.resize((_x,_y)))
+    _x = int(mask.size[0])
+    _y = int(mask.size[1])
+    Y = np.zeros([1, _y, _x])
+    mask = np.array(mask)
     for y in range(_y):
         for x in range(_x):
             if(mask[y,x]):
-                Y[0,_x*y+x] = 1
+                Y[0,y,x] = 1
     return Y
 
 train_ans_path = glob.glob("C:/Users/shgtkmt/workspace/cnn_fourier/train_ans/*.tif")
@@ -63,6 +65,8 @@ Yte = mask_check(test_ans_path[data_num])
 for i in range(data_num - 150):
     Yte = np.append(Yte,mask_check(test_ans_path[i + 150]),axis=0)
 
+
+
 from keras.models import Sequential, Model
 #model = Sequential()
 from keras.layers import Input, Dense, Activation, Flatten, Dropout
@@ -73,18 +77,34 @@ from keras.layers.advanced_activations import LeakyReLU
 
 input_img = Input(shape=(240,240,5))
 x = Conv2D(10, (3, 3), padding='same')(input_img)
-x = Conv2D(10, (3, 3), padding='same')(x)
+x = Conv2D(15, (3, 3), padding='same')(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = MaxPooling2D(pool_size=(3, 3))(x)
+x = Conv2D(20, (3, 3), padding='same')(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
 x = MaxPooling2D(pool_size=(2, 2))(x)
+x = Conv2D(30, (3, 3), padding='same')(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = MaxPooling2D(pool_size=(2, 2))(x)
+#upsampling
+x = Conv2D(30, (3, 3), padding='same')(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = UpSampling2D((3, 3))(x)
+x = Conv2D(25, (3, 3), padding='same')(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = UpSampling2D((2, 2))(x)
+x = Conv2D(20, (3, 3), padding='same')(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = UpSampling2D((2, 2))(x)
 
 #model.add(UpSampling2D((2, 2)))
 x = Conv2D(1, (3, 3), padding='same')(x)
-x = BatchNormalization()(x)
-x = Activation('relu')(x)
-x = MaxPooling2D(pool_size=(2, 2))(x)
-x = Flatten()(x)
-x = Dense(3600)(x)
 out = Activation('sigmoid')(x)
 
 model = Model(input_img, out)
@@ -92,7 +112,7 @@ model.compile(loss="binary_crossentropy",
               optimizer='adam',
              metrics=['accuracy'])
 
-model.fit(X, Y, nb_epoch=5, batch_size=10)
+model.fit(X, Y, epochs=5, batch_size=5)
 loss_and_metrics = model.evaluate(Xte,Yte)
 
 print("\nloss:{} accuracy:{}".format(loss_and_metrics[0],loss_and_metrics[1]))
