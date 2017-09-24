@@ -53,13 +53,13 @@ def mask_check(mask_path):
                 Y[0,y,x] = 1
     return Y
 
-train_ans_path = glob.glob("C:/Users/shgtkmt/workspace/cnn_fourier/train_ans/*.tif")
+train_ans_path = glob.glob("/Users/shgtkmt/workspace/cnn_fourier/train_ans/*.tif")
 data_num = (len(train_ans_path) - 1) - 26
 Y = mask_check(train_ans_path[data_num])
 for i in range(data_num):
     Y = np.append(Y,mask_check(train_ans_path[i]),axis=0)
 
-test_ans_path = glob.glob("C:/Users/shgtkmt/workspace/cnn_fourier/train_ans/*.tif")
+test_ans_path = glob.glob("/Users/shgtkmt/workspace/cnn_fourier/train_ans/*.tif")
 data_num = len(test_ans_path)-1
 Yte = mask_check(test_ans_path[data_num])
 for i in range(data_num - 150):
@@ -67,9 +67,10 @@ for i in range(data_num - 150):
 
 
 
-from keras.models import Sequential, Model
+from keras.models import Model#, Sequential
 #model = Sequential()
-from keras.layers import Input, Dense, Activation, Flatten, Dropout
+from keras.layers import Input, Dropout, Activation#, Dense, Flatten
+from keras.layers.core import Reshape
 from keras.layers.convolutional import Conv2D, UpSampling2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.normalization import BatchNormalization
@@ -102,9 +103,9 @@ x = Conv2D(20, (3, 3), padding='same')(x)
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
 x = UpSampling2D((2, 2))(x)
-
-#model.add(UpSampling2D((2, 2)))
+#fin
 x = Conv2D(1, (3, 3), padding='same')(x)
+x = Reshape((240,240))(x)
 out = Activation('sigmoid')(x)
 
 model = Model(input_img, out)
